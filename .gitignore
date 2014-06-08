@@ -1,3 +1,6 @@
+# Don't show the yaml file configuration
+*.yaml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
