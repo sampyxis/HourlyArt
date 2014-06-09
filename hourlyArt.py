@@ -8,6 +8,8 @@ import sys
 import random
 import urllib2
 import smtplib
+import logging
+
 
 # Here are the email package modules we'll need
 from email.mime.image import MIMEImage
@@ -21,6 +23,8 @@ global flickr_api_secret
 tumblr_email = ""
 url_template = 'http://farm%(farm_id)s.staticflickr.com/%(server_id)s/%(photo_id)s_%(secret)s.jpg'
 random_word = ""
+
+logging.basicConfig(filename='C:\Users\Administrator\Documents\GitHub\HourlyArt\hourlyArt.log',level=logging.DEBUG)
 
 # For scope - I had to move the assignment of the yaml variables to here from loadConfigs()
 f = open("app.yaml")
@@ -77,6 +81,7 @@ def getImage(random_word):
         try:
             url =  url_for_photo(random.choice(flickr.photos_search(text=random_word, per_page=2)[0]))
             print "Found a word"
+            logging.debug('Found a word')
             work = True
             break
         except Exception, e:
@@ -126,7 +131,10 @@ def getImage(random_word):
 # start the processing job
 # need to change director for the local server - will put into a yaml file
 def startProcessing():
-    os.system("processing-java --sketch=..\..\..\..\GitHub\HourlyArt\HourlyArt --output=..\..\..\..\GitHub\HourlyArt\HourlyArtBuild --force --run")    
+    logging.debug('Start processing')
+    #os.system("processing-java --sketch=..\..\..\..\GitHub\HourlyArt\HourlyArt --output=..\..\..\..\GitHub\HourlyArt\HourlyArtBuild --force --run")    
+    os.system("processing-java --sketch=c:\Users\Administrator\Documents\GitHub\HourlyArt\HourlyArt --output=c:\Users\Administrator\Documents\GitHub\HourlyArt\HourlyArtBuild --force --run")
+    logging.debug('End processing')
 
 # email this to tumblr
 def emailTumblr(gmail_user_name, gmail_pass_word, random_word ):
@@ -145,7 +153,7 @@ def emailTumblr(gmail_user_name, gmail_pass_word, random_word ):
     me = gmail_user_name
     msg['From'] = me
     msg['To'] = tumblr_email
-    tags = '#hourlyart #generative #generativeart #' + random_word.rstrip()
+    tags = '#hourlyart #generative #generativeart #art #artistsontumblr #' + random_word.rstrip()
     msg.preamble = tags
     print tags
 
