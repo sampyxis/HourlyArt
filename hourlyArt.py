@@ -14,6 +14,7 @@ import logging
 # Here are the email package modules we'll need
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # config vals
 gmail_user_name = ""
@@ -24,12 +25,13 @@ tumblr_email = ""
 url_template = 'http://farm%(farm_id)s.staticflickr.com/%(server_id)s/%(photo_id)s_%(secret)s.jpg'
 random_word = ""
 
+
 logging.basicConfig(filename='C:\Users\Administrator\Documents\GitHub\HourlyArt\hourlyArt.log',level=logging.DEBUG)
 
 # For scope - I had to move the assignment of the yaml variables to here from loadConfigs()
-f = open("app.yaml")
+f = open("app.yaml", 'r+')
 datamap = yaml.load(f)
-f.close()
+#f.close()
     
 gmail_user_name = datamap['gmail_user_name']
 gmail_pass_word = datamap['gmail_user_pass']
@@ -38,6 +40,21 @@ print flickr_api_key
 flickr_api_secret = datamap['flickr_api_secret']
 print flickr_api_secret
 tumblr_email = datamap['tumblr_email']
+post_number = datamap['post_number']
+processing_location = datamap['processing_location']
+
+# close file - then reopen for writing
+f.close()
+
+f = open("app.yaml", 'w+')
+#datamap = yaml.load(f)
+
+# update post_number
+post_number += 1
+datamap['post_number'] = post_number
+
+yaml.dump( datamap, f, default_flow_style=False )
+f.close()
 
 def loadConfig():
     """
@@ -54,6 +71,10 @@ def loadConfig():
             your email
         gmail_user_pass:
             your email pass
+        post_number: 
+            51
+        processing_location: 
+            location_of_processing_file            
     """
 
 
@@ -95,6 +116,7 @@ def getImage(random_word):
             break
             
     work = True
+    return random_word
 
          
         
@@ -130,10 +152,11 @@ def getImage(random_word):
     
 # start the processing job
 # need to change director for the local server - will put into a yaml file
-def startProcessing():
+def startProcessing(processing_location):
     logging.debug('Start processing')
     #os.system("processing-java --sketch=..\..\..\..\GitHub\HourlyArt\HourlyArt --output=..\..\..\..\GitHub\HourlyArt\HourlyArtBuild --force --run")    
-    os.system("processing-java --sketch=c:\Users\Administrator\Documents\GitHub\HourlyArt\HourlyArt --output=c:\Users\Administrator\Documents\GitHub\HourlyArt\HourlyArtBuild --force --run")
+    os.system("processing-java --sketch=" + processing_location + " --output=" + processing_location + "\HourlyArtBuild --force --run")    
+    #os.system("processing-java --sketch=c:\Users\Administrator\Documents\GitHub\HourlyArt\HourlyArt --output=c:\Users\Administrator\Documents\GitHub\HourlyArt\HourlyArtBuild --force --run")
     logging.debug('End processing')
 
 # email this to tumblr
@@ -148,14 +171,15 @@ def emailTumblr(gmail_user_name, gmail_pass_word, random_word ):
     #print "user: ", gmail_user_name
     #print "pass: ", gmail_pass_word
     server.login(gmail_user_name, gmail_pass_word)   
-    msg = MIMEMultipart()
-    msg['Subject'] = 'HourlyArt Post'
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'HourlyArt Post #' + str(post_number)
     me = gmail_user_name
     msg['From'] = me
     msg['To'] = tumblr_email
     tags = '#hourlyart #generative #generativeart #art #artistsontumblr #' + random_word.rstrip()
     msg.preamble = tags
     print tags
+    print msg['Subject']
 
     img = MIMEImage(open('HourlyArt/newImage/newImageChanged.jpg',"rb").read(), _subtype="jpeg")
     img.add_header('Content-Disposition', 'attachment; filename="newImageChanged.jpg"')
@@ -180,8 +204,8 @@ def main():
     #getWord()
     random_word = getWord()
     print "Word ", random_word
-    getImage(random_word)
-    startProcessing()
+    random_word = getImage(random_word)
+    startProcessing(processing_location)
     emailTumblr(gmail_user_name, gmail_pass_word, random_word)
 
     
