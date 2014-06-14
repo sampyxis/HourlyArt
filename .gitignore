@@ -55,3 +55,6 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+HourlyArtBuild/source/HourlyArt.java
+newImage/newImage.jpg
+HourlyArt/newImage/newImageChanged.jpg
