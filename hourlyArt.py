@@ -15,6 +15,7 @@ import logging
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from twython import Twython
 
 # config vals
 gmail_user_name = ""
@@ -24,6 +25,10 @@ global flickr_api_secret
 tumblr_email = ""
 url_template = 'http://farm%(farm_id)s.staticflickr.com/%(server_id)s/%(photo_id)s_%(secret)s.jpg'
 random_word = ""
+api_key = ""
+api_secret = ""
+oauth_token = ""
+oauth_token_secret = ""
 
 
 logging.basicConfig(filename='C:\Users\Administrator\Documents\GitHub\HourlyArt\hourlyArt.log',level=logging.DEBUG)
@@ -42,6 +47,10 @@ print flickr_api_secret
 tumblr_email = datamap['tumblr_email']
 post_number = datamap['post_number']
 processing_location = datamap['processing_location']
+api_key = datamap['api_key']
+api_secret = datamap['api_secret']
+oauth_token = datamap['oauth_token']
+oauth_token_secret = datamap['oauth_token_secret']
 
 # close file - then reopen for writing
 f.close()
@@ -77,7 +86,16 @@ def loadConfig():
             location_of_processing_file            
     """
 
-
+#Upload to Twitter
+def uploadTwitter( random_word):
+    twitter = Twython(api_key, api_secret,
+                      oauth_token, oauth_token_secret)
+     
+    twitter.verify_credentials()
+    #photo = open('C:\Users\Samuel Harper\Documents\GitHub\HourlyArt\HourlyArt\newImage\newImageChanged.jpg', 'rb')
+    photo = open('HourlyArt/newImage/newImageChanged.jpg', 'rb')
+    twitter.update_status_with_media(status='HourlyArt Post#' + str(post_number) + ' #' + random_word + ' #generative #generative art', media=photo)
+    
 #Get a random word
 def getWord():
     response = urllib2.urlopen('http://randomword.setgetgo.com/get.php')
@@ -101,8 +119,8 @@ def getImage(random_word):
     while work == False:
         try:
             url =  url_for_photo(random.choice(flickr.photos_search(text=random_word, per_page=2)[0]))
-            print "Found a word"
-            logging.debug('Found a word')
+            print "Found a word: " + random_word
+            #logging.debug('Found a word')
             work = True
             break
         except Exception, e:
@@ -115,10 +133,7 @@ def getImage(random_word):
             work = True
             break
             
-    work = True
-    return random_word
-
-         
+    work = True        
         
     #url = url_for_photo(random.choice(flickr.photos.getRecent()[0]))
     #url = url_for_photo(random.choice(flickr._flickr_call(method='flickr.photos.getRecent', format='rest')))
@@ -150,6 +165,7 @@ def getImage(random_word):
     fileout.write(image)
     fileout.close()
     
+    return random_word
 # start the processing job
 # need to change director for the local server - will put into a yaml file
 def startProcessing(processing_location):
@@ -207,6 +223,7 @@ def main():
     random_word = getImage(random_word)
     startProcessing(processing_location)
     emailTumblr(gmail_user_name, gmail_pass_word, random_word)
+    uploadTwitter(random_word)
 
     
 if __name__ == '__main__':
