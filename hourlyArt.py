@@ -94,7 +94,7 @@ def uploadTwitter( random_word):
     twitter.verify_credentials()
     #photo = open('C:\Users\Samuel Harper\Documents\GitHub\HourlyArt\HourlyArt\newImage\newImageChanged.jpg', 'rb')
     photo = open('HourlyArt/newImage/newImageChanged.jpg', 'rb')
-    twitter.update_status_with_media(status='HourlyArt Post#' + str(post_number) + ' #' + random_word + ' #generative #generative art', media=photo)
+    twitter.update_status_with_media(status='HourlyArt Post#' + str(post_number) + ' #generative #generative art' + ' #' + random_word , media=photo)
     
 #Get a random word
 def getWord():
